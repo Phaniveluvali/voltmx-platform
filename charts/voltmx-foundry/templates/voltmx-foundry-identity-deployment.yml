@@ -1,0 +1,141 @@
+{{ if .Values.identityEnabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voltmx-foundry-identity
+  labels:
+    app: voltmx-foundry-identity
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: identity
+    alias: identity
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.identity.replicas }}
+  selector:
+    matchLabels:
+      app: voltmx-foundry-identity
+  template:
+    metadata:
+      annotations:
+      {{- if (.Values.annotations.pods.identity) }}
+      {{- range $customLabelValue := .Values.annotations.pods.identity }}
+        {{ $customLabelValue.key }} : {{ $customLabelValue.value | quote }}
+      {{- end }}
+      {{- end }}
+      labels:
+        app: voltmx-foundry-identity
+        app.kubernetes.io/part-of: voltmx
+        app.kubernetes.io/component: identity
+        alias: identity
+        app.kubernetes.io/name: {{ include "voltmx.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- if (.Values.labels.pods.identity) }}
+      {{- range $customLabelValue := .Values.labels.pods.identity }}
+        {{ $customLabelValue.key }} : {{ $customLabelValue.value | quote }}
+      {{- end }}
+      {{- end }}
+    spec:
+      imagePullSecrets:
+      {{- if .Values.hclImagePullSecret }}
+      - name: {{ .Values.hclImagePullSecret }}
+      {{- end }}
+      {{- with .Values.identity.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if (.Values.affinity) }}
+      {{- if (.Values.affinity.identity)}}
+      affinity:
+        {{- toYaml (.Values.affinity.identity) | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- if (.Values.nodeName) }}
+      {{- if (.Values.nodeName.identity)}}
+      nodeName:
+        {{- toYaml (.Values.nodeName.identity) | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- if (.Values.tolerations) }}
+      {{- if (.Values.tolerations.identity)}}
+      tolerations:
+        {{- toYaml (.Values.tolerations.identity) | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- if (.Values.topologySpreadConstraints) }}
+      {{- if (.Values.topologySpreadConstraints.identity)}}
+      topologySpreadConstraints:
+        {{- toYaml (.Values.topologySpreadConstraints.identity) | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- if (.Values.global.hostAliases) }}
+      hostAliases:
+        {{- toYaml .Values.global.hostAliases | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: voltmx-foundry-identity
+          image: {{ .Values.imageRegistry }}/{{ .Values.imageNames.identity }}:{{ template "identityImage" . }}
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+            seccompProfile:
+              type: "RuntimeDefault"
+          tty: true
+          stdin: true
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: voltmx-foundry-identity-conf
+          readinessProbe:
+            httpGet:
+              path: '/authService'
+              port: 8080
+              httpHeaders:
+                - name: Host
+                  value: {{ template "foundryBaseUrl" . }}
+            failureThreshold: 3
+            initialDelaySeconds: {{ .Values.identity.readinessInitDelay }}
+            periodSeconds: {{ .Values.identity.readinessPeriodSeconds }}
+            successThreshold: 1
+            timeoutSeconds: {{ .Values.identity.readinessTimeoutSeconds }}
+          livenessProbe:
+            httpGet:
+              path: '/authService'
+              port: 8080
+              httpHeaders:
+                - name: Host
+                  value: {{ template "foundryBaseUrl" . }}
+            failureThreshold: 3
+            initialDelaySeconds: {{ .Values.identity.livenessInitDelay }}
+            periodSeconds: {{ .Values.identity.livenessPeriodSeconds }}
+            successThreshold: 1
+            timeoutSeconds: {{ .Values.identity.livenessTimeoutSeconds }}
+          resources:
+            limits:
+              memory: {{ .Values.identity.resourceMemoryLimit }}
+              {{- if .Values.identity.ephemeralStorageLimit }}
+              ephemeral-storage: {{ .Values.identity.ephemeralStorageLimit }}
+              {{- end }}
+            requests:
+              memory: {{ .Values.identity.resourceRequestsMemory }}
+              {{- if .Values.identity.ephemeralStorageRequest }}
+              ephemeral-storage: {{ .Values.identity.ephemeralStorageRequest }}
+              {{- end }}
+              cpu: {{ .Values.identity.resourceRequestsCpu }}
+          volumeMounts:
+            - name: foundry-common-secrets
+              mountPath: "/mnt/foundry-common-secrets"
+              readOnly: true
+            - name: identity-dump
+              mountPath: "/usr/local/tomcat/heapdumps"
+      volumes:
+        - name: foundry-common-secrets
+          secret:
+            secretName: foundry-common-secrets
+        - name: identity-dump
+          emptyDir: {}
+{{ end }}

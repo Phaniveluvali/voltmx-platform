@@ -1,0 +1,21 @@
+# Default values for voltmx-mysql
+replicaCount: 0
+
+image:
+  repository: mysql
+  tag: "8.4"
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 3306
+  nodePort: 30306
+
+storage:
+  className: local-path-retain
+  size: 20Gi
+
+auth:
+  database: "voltmxdb"
+  user: "voltmx"
+  existingSecret: "mysql-secret"

@@ -1,0 +1,30 @@
+{{ if .Values.apiPortalEnabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: voltmx-foundry-apiportal
+  annotations:
+  {{- if (.Values.annotations.services.apiPortal) }}
+  {{- range $customLabelValue := .Values.annotations.services.apiPortal }}
+    {{ $customLabelValue.key }} : {{ $customLabelValue.value | quote }}
+  {{- end }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: apiportal
+    alias: apiportal
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  {{- if (.Values.labels.services.apiPortal) }}
+  {{- range $customLabelValue := .Values.labels.services.apiPortal }}
+    {{ $customLabelValue.key }} : {{ $customLabelValue.value | quote }}
+  {{- end }}
+  {{- end }}
+spec:
+  ports:
+    - name: tomcat
+      port: 8080
+  selector:
+    app: voltmx-foundry-apiportal
+  type: ClusterIP
+{{ end }}

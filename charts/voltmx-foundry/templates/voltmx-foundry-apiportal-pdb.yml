@@ -1,0 +1,17 @@
+{{ if .Values.apiportal.podDisruptionBudgetSpec }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: voltmx-foundry-apiportal-pdb
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: apiportal
+    alias: apiportal
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  {{- toYaml .Values.apiportal.podDisruptionBudgetSpec | nindent 2}}
+  selector:
+    matchLabels:
+      app: voltmx-foundry-apiportal
+{{ end }}

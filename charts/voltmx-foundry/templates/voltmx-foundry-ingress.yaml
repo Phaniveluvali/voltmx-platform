@@ -1,0 +1,285 @@
+{{ if .Values.ingress.enabled }}
+---
+
+### Ingress controller config ###
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: auth
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: identity
+    alias: identity
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: "web,websecure"
+    {{ if .Values.ingress.sslTermination }}route.openshift.io/termination: "edge"{{ end }}
+    # Whether to strip ingress base paths while forwarding to backends or not.
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+    # AWS: By default ELB will not pass along the hostname information.
+    # So, make sure that the ELB that get's created will have proxy protocol enabled.
+    # And configmap entry of 'use-proxy-protocol: "true"' is also required.
+    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  {{ if .Values.ingress.class }}
+  ingressClassName: {{ .Values.ingress.class }}
+  {{ end }}
+  {{ if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+      - {{ template "foundryBaseUrl" . }}
+      {{ if ( (.Values.ingress.tls.customCertSecretName) ) }}
+      secretName: {{ .Values.ingress.tls.customCertSecretName }}
+      {{ end }}
+  {{ end }}
+  rules:
+    - host: {{ template "foundryBaseUrl" . }}
+      http:
+        paths:
+          # Identity paths
+          - path: /authService
+            pathType: Prefix
+            backend:
+              service:
+                name: voltmx-foundry-identity
+                port:
+                  number: 8080
+---
+
+### Ingress controller config ###
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: console
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: console
+    alias: console
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: "web,websecure"
+    {{ if .Values.ingress.sslTermination  }}route.openshift.io/termination: "edge"{{ end }}
+
+    # Whether to strip ingress base paths while forwarding to backends or not.
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+    # AWS: By default ELB will not pass along the hostname information.
+    # So, make sure that the ELB that get's created will have proxy protocol enabled.
+    # And configmap entry of 'use-proxy-protocol: "true"' is also required.
+    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  {{ if .Values.ingress.class }}
+  ingressClassName: {{ .Values.ingress.class }}
+  {{ end }}
+  {{ if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+      - {{ template "foundryBaseUrl" . }}
+      {{ if ( (.Values.ingress.tls.customCertSecretName) ) }}
+      secretName: {{ .Values.ingress.tls.customCertSecretName }}
+      {{ end }}
+  {{ end }}
+  rules:
+    - host: {{ template "foundryBaseUrl" . }}
+      http:
+        paths:
+          # Console paths
+          - path: /mfconsole
+            pathType: Prefix
+            backend:
+              service:
+                name: voltmx-foundry-console
+                port:
+                  number: 8080
+          - path: /accounts
+            pathType: Prefix
+            backend:
+              service:
+                name: voltmx-foundry-console
+                port:
+                  number: 8080
+          - path: /workspace
+            pathType: Prefix
+            backend:
+              service:
+                name: voltmx-foundry-console
+                port:
+                  number: 8080
+---
+
+### Ingress controller config ###
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: integration
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: integration
+    alias: integration
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: "web,websecure"
+    {{ if .Values.ingress.sslTermination  }}route.openshift.io/termination: "edge"{{ end }}
+
+    # Whether to strip ingress base paths while forwarding to backends or not.
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+    # AWS: By default ELB will not pass along the hostname information.
+    # So, make sure that the ELB that get's created will have proxy protocol enabled.
+    # And configmap entry of 'use-proxy-protocol: "true"' is also required.
+    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  {{ if .Values.ingress.class }}
+  ingressClassName: {{ .Values.ingress.class }}
+  {{ end }}
+  {{ if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+      - {{ template "foundryBaseUrl" . }}
+      {{ if ( (.Values.ingress.tls.customCertSecretName) ) }}
+      secretName: {{ .Values.ingress.tls.customCertSecretName }}
+      {{ end }}
+  {{ end }}
+  rules:
+    - host: {{ template "foundryBaseUrl" . }}
+      http:
+        paths:
+          # Integration paths
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: voltmx-foundry-integration
+                port:
+                  number: 8080
+          - path: /services
+            pathType: Prefix
+            backend:
+              service:
+                name: voltmx-foundry-integration
+                port:
+                  number: 8080
+          - path: /apps
+            pathType: Prefix
+            backend:
+              service:
+                name: voltmx-foundry-integration
+                port:
+                  number: 8080
+---
+
+### Ingress controller config ###
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: engagement
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: engagement
+    alias: engagement
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: "web,websecure"
+    {{ if .Values.ingress.sslTermination  }}route.openshift.io/termination: "edge"{{ end }}
+
+    # Whether to strip ingress base paths while forwarding to backends or not.
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+    # AWS: By default ELB will not pass along the hostname information.
+    # So, make sure that the ELB that get's created will have proxy protocol enabled.
+    # And configmap entry of 'use-proxy-protocol: "true"' is also required.
+    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  {{ if .Values.ingress.class }}
+  ingressClassName: {{ .Values.ingress.class }}
+  {{ end }}
+  {{ if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+      - {{ template "foundryBaseUrl" . }}
+      {{ if ( (.Values.ingress.tls.customCertSecretName) ) }}
+      secretName: {{ .Values.ingress.tls.customCertSecretName }}
+      {{ end }}
+  {{ end }}
+  rules:
+    - host: {{ template "foundryBaseUrl" . }}
+      http:
+        paths:
+          # KMS
+          - path: /kpns
+            pathType: Prefix
+            backend:
+              service:
+                name: voltmx-foundry-engagement
+                port:
+                  number: 8080
+---
+
+### Ingress controller config ###
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: portal
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: apiportal
+    alias: apiportal
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: "web,websecure"
+    {{ if .Values.ingress.sslTermination }}route.openshift.io/termination: "edge"{{ end }}
+
+    # Whether to strip ingress base paths while forwarding to backends or not.
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+    # AWS: By default ELB will not pass along the hostname information.
+    # So, make sure that the ELB that get's created will have proxy protocol enabled.
+    # And configmap entry of 'use-proxy-protocol: "true"' is also required.
+    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  {{ if .Values.ingress.class }}
+  ingressClassName: {{ .Values.ingress.class }}
+  {{ end }}
+  {{ if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+      - {{ template "foundryBaseUrl" . }}
+      {{ if ( (.Values.ingress.tls.customCertSecretName) ) }}
+      secretName: {{ .Values.ingress.tls.customCertSecretName }}
+      {{ end }}
+  {{ end }}
+  rules:
+    - host: {{ template "foundryBaseUrl" . }}
+      http:
+        paths:
+          # ApiPortal
+          - path: /apiportal
+            pathType: Prefix
+            backend:
+              service:
+                name: voltmx-foundry-apiportal
+                port:
+                  number: 8080
+---
+{{ end }}

@@ -1,0 +1,141 @@
+{{ if .Values.integrationEnabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voltmx-foundry-integration
+  labels:
+    app: voltmx-foundry-integration
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: integration
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    alias: integration
+spec:
+  replicas: {{ .Values.integration.replicas }}
+  selector:
+    matchLabels:
+      app: voltmx-foundry-integration
+  template:
+    metadata:
+      annotations:
+      {{- if (.Values.annotations.pods.integration) }}
+      {{- range $customLabelValue := .Values.annotations.pods.integration }}
+        {{ $customLabelValue.key }} : {{ $customLabelValue.value | quote }}
+      {{- end }}
+      {{- end }}
+      labels:
+        app: voltmx-foundry-integration
+        app.kubernetes.io/part-of: voltmx
+        app.kubernetes.io/component: integration
+        app.kubernetes.io/name: {{ include "voltmx.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        alias: integration
+      {{- if (.Values.labels.pods.integration) }}
+      {{- range $customLabelValue := .Values.labels.pods.integration }}
+        {{ $customLabelValue.key }} : {{ $customLabelValue.value | quote }}
+      {{- end }}
+      {{- end }}
+    spec:
+      imagePullSecrets:
+      {{- if .Values.hclImagePullSecret }}
+      - name: {{ .Values.hclImagePullSecret }}
+      {{- end }}
+      {{- with .Values.integration.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if (.Values.affinity) }}
+      {{- if (.Values.affinity.integration)}}
+      affinity:
+        {{- toYaml (.Values.affinity.integration) | nindent 8 }}
+      {{- end }}
+      {{- end }} 
+      {{- if (.Values.nodeName) }}
+      {{- if (.Values.nodeName.integration)}}
+      nodeName:
+        {{- toYaml (.Values.nodeName.integration) | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- if (.Values.tolerations) }}
+      {{- if (.Values.tolerations.integration)}}
+      tolerations:
+        {{- toYaml (.Values.tolerations.integration) | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- if (.Values.topologySpreadConstraints) }}
+      {{- if (.Values.topologySpreadConstraints.integration)}}
+      topologySpreadConstraints:
+        {{- toYaml (.Values.topologySpreadConstraints.integration) | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- if (.Values.global.hostAliases) }}
+      hostAliases:
+        {{- toYaml .Values.global.hostAliases | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: voltmx-foundry-integration
+          image: {{ .Values.imageRegistry }}/{{ .Values.imageNames.integration }}:{{ template "integrationImage" . }}
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+            seccompProfile:
+              type: "RuntimeDefault"
+          tty: true
+          stdin: true
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: voltmx-foundry-integration-conf
+          readinessProbe:
+            httpGet:
+              path: '/admin/healthcheck'
+              port: 8080
+              httpHeaders:
+                - name: Host
+                  value: {{ template "foundryBaseUrl" . }}
+            failureThreshold: 3
+            initialDelaySeconds: {{ .Values.integration.readinessInitDelay }}
+            periodSeconds: {{ .Values.integration.readinessPeriodSeconds }}
+            successThreshold: 1
+            timeoutSeconds: {{ .Values.integration.readinessTimeoutSeconds }}
+          livenessProbe:
+            httpGet:
+              path: '/admin/healthcheck'
+              port: 8080
+              httpHeaders:
+                - name: Host
+                  value: {{ template "foundryBaseUrl" . }}
+            failureThreshold: 3
+            initialDelaySeconds: {{ .Values.integration.livenessInitDelay }}
+            periodSeconds: {{ .Values.integration.livenessPeriodSeconds }}
+            successThreshold: 1
+            timeoutSeconds: {{ .Values.integration.livenessTimeoutSeconds }}
+          resources:
+            limits:
+              memory: {{ .Values.integration.resourceMemoryLimit }}
+              {{- if .Values.integration.ephemeralStorageLimit }}
+              ephemeral-storage: {{ .Values.integration.ephemeralStorageLimit }}
+              {{- end }}
+            requests:
+              memory: {{ .Values.integration.resourceRequestsMemory }}
+              {{- if .Values.integration.ephemeralStorageRequest }}
+              ephemeral-storage: {{ .Values.integration.ephemeralStorageRequest }}
+              {{- end }}
+              cpu: {{ .Values.integration.resourceRequestsCpu }}
+          volumeMounts:
+            - name: foundry-common-secrets
+              mountPath: "/mnt/foundry-common-secrets"
+              readOnly: true
+            - name: integration-dump
+              mountPath: "/usr/local/tomcat/heapdumps"
+      volumes:
+        - name: foundry-common-secrets
+          secret:
+            secretName: foundry-common-secrets
+        - name: integration-dump
+          emptyDir: {}
+{{ end }}

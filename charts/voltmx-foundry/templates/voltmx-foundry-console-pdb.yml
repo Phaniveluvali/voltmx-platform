@@ -1,0 +1,17 @@
+{{ if .Values.console.podDisruptionBudgetSpec }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: voltmx-foundry-console-pdb
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: console
+    alias: console
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  {{- toYaml .Values.console.podDisruptionBudgetSpec | nindent 2}}
+  selector:
+    matchLabels:
+      app: voltmx-foundry-console
+{{ end }}

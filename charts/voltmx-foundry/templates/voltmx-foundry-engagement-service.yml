@@ -1,0 +1,30 @@
+{{ if .Values.engagementEnabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: voltmx-foundry-engagement
+  annotations:
+  {{- if (.Values.annotations.services.engagement) }}
+  {{- range $customLabelValue := .Values.annotations.services.engagement }}
+    {{ $customLabelValue.key }} : {{ $customLabelValue.value | quote }}
+  {{- end }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: engagement
+    alias: engagement
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  {{- if (.Values.labels.services.engagement) }}
+  {{- range $customLabelValue := .Values.labels.services.engagement }}
+    {{ $customLabelValue.key }} : {{ $customLabelValue.value | quote }}
+  {{- end }}
+  {{- end }}
+spec:
+  ports:
+    - name: tomcat
+      port: 8080
+  selector:
+    app: voltmx-foundry-engagement
+  type: ClusterIP
+{{ end }}

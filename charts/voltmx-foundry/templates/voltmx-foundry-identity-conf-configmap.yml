@@ -1,0 +1,53 @@
+{{ if .Values.identityEnabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: voltmx-foundry-identity-conf
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: identity
+    alias: identity
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+data:
+  DOCKER_PORT: "8080"
+  DOCKER_HOST: {{ template "foundryBaseUrl" . }}
+  FABRIC_PORT: "{{ .Values.ingress.port }}"
+  HTTP_PROTOCOL: "{{ .Values.ingress.protocol }}"
+  TOMCAT_SSL_ENABLED: "{{ .Values.configureTomcatWithTls }}"
+  TOMACT_KEYSTORE_PATH: "/mnt/foundry-common-secrets/keystore.jks"
+  TOMCAT_TLS_PROTOCOL_VERSION: "TLSv1.2"
+  TOMCAT_SSL_PROTOCOL: "TLS"
+  TOMCAT_KEYSTORE_TYPE: "JKS"
+  TOMCAT_CONNECTOR_PROTOCOL: "HTTP/1.1"
+  TOMCAT_MAX_THREADS: "200"
+  TOMCAT_CONNECTION_TIMEOUT: "60000"
+  AUTH_DB_HOST: {{ template "resolveDbHostName" . }}
+  AUTH_RDS_DB_TYPE: {{ template "db_choice" . }}
+  AUTH_DB_PORT: "{{ .Values.dbPort }}"
+  AUTH_CONFIG_DBNAME: {{ template "idconfigdbname" . }}
+  AUTH_GLOBAL_DB_MAX_ACTIVE_DBC: "6"
+  AUTH_GLOBAL_DB_CONNECTION_TIMEOUT: "2000"
+  AUTH_GLOBAL_DB_MIN_IDLE: "1"
+  AUTH_DB_DIALECT: {{ template "authDbDialect" . }}
+  CACHE_CONFIG: ""
+  AUTH_DB_USER: {{ template "idconfigdb_user_name" . }}
+  KONY_AUTH_CONFIG_DB_NAME: {{ template "idconfigdbname" . }}
+  AUTH_CONFIG_DB_MAX_ACTIVE_DBC: "14"
+  AUTH_CONFIG_DB_CONNECTION_TIMEOUT: "2000"
+  AUTH_CONFIG_DB_MIN_IDLE: "5"
+  AUTH_MASTER_KEY: {{ required "The property authMasterKey is required. This should be initialized with the script init-guids.sh. Please run init-guids.sh." .Values.authMasterKey | quote }}
+  AUTH_MASTER_KEY_ID: {{ required "The property authMasterKeyId is required. This should be initialized with the script init-guids.sh. Please run init-guids.sh." .Values.authMasterKeyId | quote }}
+  AUTH_MAX_ACTIVE_DBC: "20"
+  APPSERVER_TYPE: TOMCAT
+  ADMIN_USERSTORE_PROVIDER: AUTH
+  AUTHCONFIGDB_URL: {{ template "authDbUrl" . }}
+  AUTHDB_DATASOURCE: {{ template "authDbDatasource" . }}
+  DB_DRIVER: {{ template "dbDriver" . }}
+  IDENTITY_MIN_RAM_PERCENTAGE: "{{ .Values.identity.minRamPercentage }}"
+  IDENTITY_MAX_RAM_PERCENTAGE: "{{ .Values.identity.maxRamPercentage }}"
+  IDENTITY_GARBAGE_COLLECTOR_TYPE: "+UseG1GC"
+  IDENTITY_CUSTOM_JAVA_OPTS: "{{ .Values.identity.customJavaOpts }} {{ if .Values.enableCaCertsOverride }}-Djavax.net.ssl.trustStore=/mnt/foundry-common-secrets/cacerts -Djavax.net.ssl.trustStorePassword={{ .Values.serverTrustStorePass }}{{ end }}"
+  TZ: "{{ .Values.timeZone }}"
+  ENABLE_REDIS_SSL: "false"
+{{ end }}

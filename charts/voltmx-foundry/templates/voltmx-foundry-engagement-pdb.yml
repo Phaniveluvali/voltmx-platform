@@ -1,0 +1,17 @@
+{{ if .Values.engagement.podDisruptionBudgetSpec }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: voltmx-foundry-engagement-pdb
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: engagement
+    alias: engagement
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  {{- toYaml .Values.engagement.podDisruptionBudgetSpec | nindent 2}}
+  selector:
+    matchLabels:
+      app: voltmx-foundry-engagement
+{{ end }}

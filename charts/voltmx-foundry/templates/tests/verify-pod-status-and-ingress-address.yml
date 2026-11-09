@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "foundry-helm-test"
+  annotations:
+    "helm.sh/hook": test
+spec:
+  imagePullSecrets:
+  {{- if .Values.hclImagePullSecret }}
+  - name: {{ .Values.hclImagePullSecret }}
+  {{- end }}
+  containers:
+    - name: foundry-helm-test
+      image: {{ .Values.imageRegistry }}/voltmx-foundry-validator:{{ .Values.foundryBuildVer }}
+      imagePullPolicy: Always
+      command: ["/bin/sh", "-c"]
+      args: ["./startup-check.sh {{ .Values.ingress.protocol }}://{{ .Values.serverDomainName }} && ./verify-ingress-address.sh && ./verify-pod-status.sh"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+        runAsNonRoot: true
+        seccompProfile: 
+          type: "RuntimeDefault"
+      env:
+      - name: IDENTITY_ENABLED
+        value: "{{ .Values.identityEnabled }}" 
+      - name: CONSOLE_ENABLED
+        value: "{{ .Values.consoleEnabled }}"
+      - name: INTEGRATION_ENABLED
+        value: "{{ .Values.integrationEnabled }}"
+      - name: MESSAGING_ENABLED
+        value: "{{ .Values.engagementEnabled }}"
+      - name: APIPORTAL_ENABLED
+        value: "{{ .Values.apiPortalEnabled }}"
+  restartPolicy: Never

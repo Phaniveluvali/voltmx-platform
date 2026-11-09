@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: {{ .Release.Namespace | default "mysql" }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: mysql
+  ports:
+    - name: mysql
+      port: {{ .Values.service.port }}
+      targetPort: 3306
+      {{- if and (eq .Values.service.type "NodePort") .Values.service.nodePort }}
+      nodePort: {{ .Values.service.nodePort }}
+      {{- end }}

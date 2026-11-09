@@ -1,0 +1,642 @@
+# Default values for Volt Foundry.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+######## Note: Do not delete any keys or the install may fail!!!
+
+
+imageRegistry: "hclcr.io/voltmx"
+foundryBuildVer: "9.5.21.4_GA"
+hclImagePullSecret: "myregkey1"
+global:
+  hostAliases:
+    - ip: "10.104.237.171"
+      hostnames:
+        - "tecnics-internal.online"
+# configureTomcatWithTls indicates if Tomcat will only accept SSL/TLS
+# connections Set to True if tomcat should be configured to accept TLS
+# connections.  Other configuration will be required (specify the cert and key)
+configureTomcatWithTls: false
+
+ingress:
+  # Set to true or false
+  enabled: true
+
+  # Protocol is used to build URLs for Foundry resources.  This should
+  # be the protocol used by users and integrating applications.  This value
+  # should be "http" or "https".
+  #
+  # Note: If tls is enabled this setting should be https or Foundry setup will fail.
+  protocol: "https"
+
+  # Port to use for ingress that is generally 80 or 443.  Used to build URLs
+  # to Foundry services.
+  #
+  # Note: If tls is enabled this setting should be 443.
+  port: "443"
+
+  # The class name of your Ingress. When utilizing Azure Application Gateway
+  # in AKS specify "azure-application-gateway". When using the default Rancher
+  # Desktop configuration with Traefik and the default OpenShift with nginx
+  # can be "nginx" as the clusters have a default Ingress
+  # provider that will service any Ingress that does not specify a specific
+  # Ingress class name.  Alternatively, you could specify "traefik" or
+  # "openshift-default" respectively.
+  class: "nginx"
+
+  # Annotations allow you to specify additional annotations that will be
+  # added to every ingress object.  Add one annotation per line, each
+  # annotation should be indented 2 spaces and should be of the format
+  #   annotationName: value
+  # when rendered, your annotation value will automatically be quoted.
+  # Below are default annotations for nginx. Can be modified as per
+  # application gateway and if required new annotations can be added.
+  annotations:
+    #  nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    #  nginx.ingress.kubernetes.io/affinity: "cookie"
+    #  nginx.ingress.kubernetes.io/session-cookie-name: "idsessionid"
+    #  nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+    #  nginx.ingress.kubernetes.io/proxy-body-size: "262M"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "262M"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+  # Configure Ingress with either the Cluster or a Custom SSL certificate
+  tls:
+    # Set to true to enable tls support or false to disable it.
+    enabled: true
+
+    # Support for a customized certificate.
+    #
+    # If customCertSecretName is not set the Cluster certificate will be used for tls.
+    # Provide secret name which has tls.crt and tls.key
+    customCertSecretName: "ca-vmx-tls-cert"
+      
+  # Adds annotations to Ingress causing OpenShift to use the cluster's
+  # default SSL cert.
+  sslTermination: false
+
+
+# enableCaCertsOverride configures the cluster to use the cacerts file located
+# in the certs subdirectory If your SSL cert is self signed or signed by a non
+# recognized CA, you can add your certificate to the cacerts file.
+enableCaCertsOverride: true
+
+#-------------------------------------------------------------------------------
+# Installation Environment name, in lowercase (String)
+# Ex: dev, qa, prod, eastusprod
+installEnvName: "dev"
+
+#-------------------------------------------------------------------------------
+# Install Type (all upper case)
+# Set this to PRODUCTION for Production deployment. NON-PRODUCTION for DEV/QA or other non-production environments
+foundryInstallType: "NON-PRODUCTION"
+
+#-------------------------------------------------------------------------------
+
+### Install Components ###
+# Set to true or false, based upon individual components to install
+identityEnabled: true
+consoleEnabled: true
+apiPortalEnabled: true
+integrationEnabled: true
+engagementEnabled: true
+
+#-------------------------------------------------------------------------------
+
+### Application Server Details ###
+
+# Domain name for Volt Foundry (String)
+# This value should not be IP address or 'localhost'
+# This value should be hostname of the LoadBalancer
+serverDomainName: "tecnics-internal.online"
+
+#-------------------------------------------------------------------------------
+
+### Database details ###
+
+# Database type which you want to use for Volt Foundry (String)
+# Possible values:
+#   "mysql" for MySQL DB server
+#   "sqlserver" for Azure MSSQL or SQLServer
+#   "oracle" for Oracle DB server
+dbType: "mysql"
+
+# Indicates whether the database server is a cluster or a standalone server. (String)
+# Please note that currently, this feature is only supported for MySQL databases.
+# Possible values:
+#   "cluster" for a cluster database server.
+#   "standalone" for a standalone database server.
+isCluster: "standalone"
+
+# Database server hostname (String)
+dbHost: "mysql.mysql.svc.cluster.local"
+
+# Database server port number (Number). This can be empty for cloud managed service.
+dbPort: 3306
+
+# Database User and password - you may set a single general userid/password here,
+# or you may set specific userid/password combinations below.  If set, the
+# specific values override the general dbUser/dbPassword.
+
+# Database server user (String)
+dbUser: "root"
+
+# Database server password (String) enclosed in quotes
+dbPass: "ChangeMe@123"
+
+# If above dbPass was encrypted, enter secret key here in quotes:
+dbPassSecretKey: ""
+
+# These are defaults, only change if necessary.
+serverStorageDbPass: ""
+serverStorageDbPassSecretKey: ""
+serverTrustStorePass: "changeit"
+serverTrustStorePassKey: ""
+
+# The dbPrefix and dbSuffix are optional inputs. If they
+# are not specified, schemas are created for example as 'admindb'.
+# If inputs are specified such as dbPrefix: foundry and dbSuffix: container,
+# schemas are created for example as 'foundryadmindbcontainer'.
+
+# Database server prefix for Volt Foundry schemas/tables (String)
+dbPrefix: "et_"
+
+# Database server suffix for Volt Foundry schemas/tables (String)
+dbSuffix: "_dev"
+
+#-------------------------------------------------------------------------------
+# If dbType is "oracle", the following values need to be set:
+# Database Data tablespace name (String)
+dbDataTS:
+
+# Database Index tablespace name (String)
+dbIndexTS:
+
+# Database LOB tablespace name (String)
+dbLobTS:
+
+# Database service name (String)
+dbService:
+
+dbupdate:
+
+  # Use dbupdate.advancedMode when you need to deploy different image versions
+  # for specific apps (such as API Portal, Integration, Engagement (Messaging), etc).
+  # Signify the version here with the versionTag and specify which component
+  # will be upgraded to that version.
+  advancedMode:
+    enabled: false
+
+    # The remaining properties only apply if advancedMode is enabled.  Otherwise
+    # the foundryBuildVer tag is used and all schemas are created based on the
+    # xxxxxEnabled properties above (identityEnabled, consoleEnabled, etc)
+    #
+    # It is conceivable that you may need to run the dbupdate multiple times
+    # with a different version tag and updating different application schemas
+    # each time.  This should only be required when different components are
+    # running at a different version then the others.
+
+    # versionTag specifies the version of dbupdate.  This must match the target version
+    # tag for the container you plan on deploying.
+    versionTag: ""
+
+    # indicate which component's database schema should be upgraded to the
+    # versionTag specified above
+    updateIdentitySchema: false
+    updateConsoleSchema: false
+    updateIntegrationSchema: false
+    updateEngagementSchema: false
+
+#-------------------------------------------------------------------------------
+### Time Zone ###
+# The timeZone variable needs to be set to maintain consistency between the
+# Application server and the Database server. The default value of Time_Zone is
+# set to UTC. Refer to
+# https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for Time Zone
+# (TZ*) values.
+#-------------------------------------------------------------------------------
+timeZone: "Asia/Dubai"
+
+#-------------------------------------------------------------------------------
+# GUIDs - these should be set by running init-guids.sh depending on new vs
+# upgrade
+#-------------------------------------------------------------------------------
+accountsEncryptionKey: 5f10016f-d2b3-c73f-63fb-de048bb3e506
+waasMasterKey: 8b443a69-480a-7c4c-feb8-e3e56f933974
+waasMasterKeyId: 1bec7405-8085-e3ed-668c-53c41e3d7a68
+authMasterKey: a3c98b5d-0ac9-0609-cdba-291ed23ecc7d
+authMasterKeyId: 0e57e779-31bf-8c31-e983-7c8c97396c58
+useExistingDb: false
+
+#-------------------------------------------------------------------------------
+### Application Container tuning ###
+#-------------------------------------------------------------------------------
+apiportal:
+  # delay after startup before the probe is used (in seconds)
+  livenessInitDelay: 600
+  readinessInitDelay: 30
+
+  # Readiness Probe period seconds and timeout seconds
+  readinessPeriodSeconds: 30
+  readinessTimeoutSeconds: 120
+
+  # Liveness Probe period seconds and timeout seconds
+  livenessPeriodSeconds: 30
+  livenessTimeoutSeconds: 120
+
+  # RAM percentage (whole integer as a String)
+  minRamPercentage: "50"
+  maxRamPercentage: "80"
+
+  customJavaOpts: "-Xms1000m -Xmx1200m -XX:NewSize=256m -XX:MaxNewSize=256m -Dlog4j2.enableJndiJdbc=true "
+  replicas: 0
+  resourceRequestsCpu: "200m"
+  resourceRequestsMemory: "1G"
+  resourceMemoryLimit: "1.2G"
+
+  # minimum and maximum size for empty dir & other ephemeral storage.  If no value
+  # is specified the request or limit will not be specified and resulting behavior is specific
+  # to the underlying Kubernetes platform but could result in exhausting free disk space.
+  ephemeralStorageRequest: 100M
+  ephemeralStorageLimit: 1.5G
+
+  # Image Tag Override
+  # Use to specify a specific build version
+  imageTagOverride:
+
+  # Pod disruption budget
+  # Use this to set concurrent limit disruption budget of the application.
+  # Specify either maxUnavailable or minAvailable (only one).  The value should be either
+  # an integer for the number of pods or a percent.  Uncomment the lines below but make sure
+  # only maxUnavailable or minAvailable is used (leave the other commented out) take note of the 2 space indention.
+#  podDisruptionBudgetSpec:
+#    maxUnavailable: 1
+#    minAvailable: 50%
+
+  # control node selector
+  nodeSelector: {}
+
+console:
+  # delay after startup before the probe is used (in seconds)
+  livenessInitDelay: 600
+  readinessInitDelay: 30
+
+  # Readiness Probe period seconds and timeout seconds
+  readinessPeriodSeconds: 30
+  readinessTimeoutSeconds: 120
+
+  # Liveness Probe period seconds and timeout seconds
+  livenessPeriodSeconds: 30
+  livenessTimeoutSeconds: 120
+
+  # RAM percentage (whole integer as a String)
+  minRamPercentage: "50"
+  maxRamPercentage: "80"
+
+  customJavaOpts: "-Xms2000m -Xmx2100m -XX:NewSize=256m -XX:MaxNewSize=512m -Dlog4j2.enableJndiJdbc=true "
+  replicas: 0
+  resourceRequestsCpu: "300m"
+  resourceRequestsMemory: "2G"
+  resourceMemoryLimit: "2.7G"
+
+  # minimum and maximum size for empty dir & other ephemeral storage.  If no value
+  # is specified the request or limit will not be specified and resulting behavior is specific
+  # to the underlying Kubernetes platform but could result in exhausting free disk space.
+  ephemeralStorageRequest: 100M
+  ephemeralStorageLimit: 1.5G
+
+  # Image Tag Override
+  # Use to specify a specific build version
+  imageTagOverride:
+
+  # Pod disruption budget
+  # Use this to set concurrent limit disruption budget of the application.
+  # Specify either maxUnavailable or minAvailable (only one).  The value should be either
+  # an integer for the number of pods or a percent.  Uncomment the lines below but make sure
+  # only maxUnavailable or minAvailable is used (leave the other commented out) take note of the 2 space indention.
+#  podDisruptionBudgetSpec:
+#    maxUnavailable: 1
+#    minAvailable: 50%
+
+  # control node selector
+  nodeSelector: {}
+
+engagement:
+  # delay after startup before the probe is used (in seconds)
+  livenessInitDelay: 300
+  readinessInitDelay: 30
+
+  # Readiness Probe period seconds and timeout seconds
+  readinessPeriodSeconds: 30
+  readinessTimeoutSeconds: 120
+
+  # Liveness Probe period seconds and timeout seconds
+  livenessPeriodSeconds: 30
+  livenessTimeoutSeconds: 120
+
+  # RAM percentage (whole integer as a String)
+  minRamPercentage: "50"
+  maxRamPercentage: "80"
+
+  customJavaOpts: "-Xms2500m -Xmx3000m -XX:NewSize=256m -XX:MaxNewSize=512m -Dlog4j2.enableJndiJdbc=true "
+  replicas: 0
+  resourceRequestsCpu: "200m"
+  resourceRequestsMemory: "1G"
+  resourceMemoryLimit: "1.5G"
+
+  # minimum and maximum size for empty dir & other ephemeral storage.  If no value
+  # is specified the request or limit will not be specified and resulting behavior is specific
+  # to the underlying Kubernetes platform but could result in exhausting free disk space.
+  ephemeralStorageRequest: 100M
+  ephemeralStorageLimit: 1.5G
+
+  # Image Tag Override
+  # Use to specify a specific build version
+  imageTagOverride:
+
+  # Pod disruption budget
+  # Use this to set concurrent limit disruption budget of the application.
+  # Specify either maxUnavailable or minAvailable (only one).  The value should be either
+  # an integer for the number of pods or a percent.  Uncomment the lines below but make sure
+  # only maxUnavailable or minAvailable is used (leave the other commented out) take note of the 2 space indention.
+#  podDisruptionBudgetSpec:
+#    maxUnavailable: 1
+#    minAvailable: 50%
+
+  # control node selector
+  nodeSelector: {}
+
+identity:
+  # delay after startup before the probe is used (in seconds)
+  livenessInitDelay: 300
+  readinessInitDelay: 30
+
+  # Readiness Probe period seconds and timeout seconds
+  readinessPeriodSeconds: 30
+  readinessTimeoutSeconds: 120
+
+  # Liveness Probe period seconds and timeout seconds
+  livenessPeriodSeconds: 30
+  livenessTimeoutSeconds: 120
+
+  # RAM percentage (whole integer as a String)
+  minRamPercentage: "50"
+  maxRamPercentage: "80"
+
+  customJavaOpts: "-Xms1000m -Xmx2300m -XX:NewSize=256m -XX:MaxNewSize=256m -Dlog4j2.enableJndiJdbc=true "
+  replicas: 0
+  resourceRequestsCpu: "400m"
+  resourceRequestsMemory: "1G"
+  resourceMemoryLimit: "1.5G"
+
+  # minimum and maximum size for empty dir & other ephemeral storage.  If no value
+  # is specified the request or limit will not be specified and resulting behavior is specific
+  # to the underlying Kubernetes platform but could result in exhausting free disk space.
+  ephemeralStorageRequest: 100M
+  ephemeralStorageLimit: 1.5G
+
+  # Image Tag Override
+  # Use to specify a specific build version
+  imageTagOverride:
+
+  # Pod disruption budget
+  # Use this to set concurrent limit disruption budget of the application.
+  # Specify either maxUnavailable or minAvailable (only one).  The value should be either
+  # an integer for the number of pods or a percent.  Uncomment the lines below but make sure
+  # only maxUnavailable or minAvailable is used (leave the other commented out) take note of the 2 space indention.
+#  podDisruptionBudgetSpec:
+#    maxUnavailable: 1
+#    minAvailable: 50%
+
+  # control node selector
+  nodeSelector: {}
+
+integration:
+  # delay after startup before the probe is used (in seconds)
+  livenessInitDelay: 600
+  readinessInitDelay: 30
+
+  # Readiness Probe period seconds and timeout seconds
+  readinessPeriodSeconds: 30
+  readinessTimeoutSeconds: 120
+
+  # Liveness Probe period seconds and timeout seconds
+  livenessPeriodSeconds: 30
+  livenessTimeoutSeconds: 120
+
+  # RAM percentage (whole integer as a String)
+  minRamPercentage: "50"
+  maxRamPercentage: "80"
+
+  customJavaOpts: "-Xms2000m -Xmx3000m -XX:NewSize=256m -XX:MaxNewSize=512m -Dlog4j2.enableJndiJdbc=true "
+  replicas: 0
+  resourceRequestsCpu: "300m"
+  resourceRequestsMemory: "1G"
+  resourceMemoryLimit: "2G"
+
+  # minimum and maximum size for empty dir & other ephemeral storage.  If no value
+  # is specified the request or limit will not be specified and resulting behavior is specific
+  # to the underlying Kubernetes platform but could result in exhausting free disk space.
+  ephemeralStorageRequest: 100M
+  ephemeralStorageLimit: 1.5G
+
+  # Image Tag Override
+  # Use to specify a specific build version
+  imageTagOverride:
+
+  # Pod disruption budget
+  # Use this to set concurrent limit disruption budget of the application.
+  # Specify either maxUnavailable or minAvailable (only one).  The value should be either
+  # an integer for the number of pods or a percent.  Uncomment the lines below but make sure
+  # only maxUnavailable or minAvailable is used (leave the other commented out) take note of the 2 space indention.
+#  podDisruptionBudgetSpec:
+#    maxUnavailable: 1
+#    minAvailable: 50%
+
+  # control node selector
+  nodeSelector: {}
+  #Added for Mapping the IP address to hostname for API Portal health check until the cluster DNS issue is resolved. This is required only for API Portal component as of now. This will be removed once the cluster DNS issue is resolved.
+hostAliases:
+    - ip: "10.117.60.83"
+      hostnames:
+        - "soadevint.et.ae"
+
+#-------------------------------------------------------------------------------
+### Kubernetes ServiceAccount that will be used to deploy
+#-------------------------------------------------------------------------------
+deploymentServiceAccount: "default"
+
+#-------------------------------------------------------------------------------
+### List of VoltMX image names
+#-------------------------------------------------------------------------------
+imageNames:
+  database: "voltmx-foundry-db"
+  identity: "voltmx-foundry-identity"
+  console: "voltmx-foundry-console"
+  apiPortal: "voltmx-foundry-apiportal"
+  integration: "voltmx-foundry-integration"
+  engagement: "voltmx-foundry-engagement"
+
+# Labels for VoltMX Foundry components pods and services
+#-------------------------------------------------------------------------------
+### Example : Below labels are already defined in component yaml files
+    # labels:
+      #  app: voltmx-foundry-apiportal
+      #  app.kubernetes.io/part-of: voltmx
+      #  app.kubernetes.io/component: apiportal
+      #  alias: apiportal
+      #  app.kubernetes.io/name: {{ include "voltmx.name" . }}
+      #  app.kubernetes.io/instance: {{ .Release.Name }}
+#-------------------------------------------------------------------------------
+# Sample "labels" configuration:
+#   labels:
+#     pods:
+#       console:
+#         - key: KEY1
+#           value: VALUE1
+#         - key: KEY2
+#           value: VALUE2
+labels:
+  pods:
+    console:
+    identity:
+    apiPortal:
+    integration:
+    engagement:
+  services:
+    console:
+    identity:
+    apiPortal:
+    integration:
+    engagement:
+
+# Annotations for VoltMX Foundry components pods and services
+#-------------------------------------------------------------------------------
+# Sample "annotations" configuration:
+#   labels:
+#     pods:
+#       console:
+#         - key: KEY1
+#           value: VALUE1
+#         - key: KEY2
+#           value: VALUE2
+annotations:
+  pods:
+    console:
+    identity:
+    apiPortal:
+    integration:
+    engagement:
+  services:
+    console:
+    identity:
+    apiPortal:
+    integration:
+    engagement:
+
+# nodeName is a field in the Pod spec. If the nodeName field is not empty, the scheduler ignores the Pod and the kubelet on the named node tries to place the Pod on that node.
+# e.g nodeName
+# nodeName:
+#   console: "node-0"
+nodeName:
+  console: ""
+  identity: ""
+  apiPortal: ""
+  integration: ""
+  engagement: ""
+
+# Tolerations are applied to pods. Tolerations allow the scheduler to schedule pods with matching taints.
+# e.g tolerations
+# tolerations:
+#   console:
+#   - key: "key1"
+#     operator: "Equal"
+#     value: "value1"
+#     effect: "NoSchedule"
+tolerations:
+  console:
+  identity:
+  apiPortal:
+  integration:
+  engagement:
+
+# You can use topology spread constraints to control how Pods are spread across your cluster among failure-domains such as regions, zones, nodes, or among any other topology domains that you define.
+# e.g topologySpreadConstraints:
+# topologySpreadConstraints:
+#   console:
+#   - maxSkew: 1
+#     topologyKey: zone
+#     whenUnsatisfiable: DoNotSchedule #ScheduleAnyway
+#     labelSelector:
+#       matchLabels:
+#         app: voltmx-foundry-console
+topologySpreadConstraints:
+  console:
+  identity:
+  apiPortal:
+  integration:
+  engagement:
+
+# Affinity and anti-affinity expands the types of constraints you can define
+affinity:
+  console:
+    podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - voltmx-foundry-console
+                topologyKey: "kubernetes.io/hostname"
+  identity:
+    podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - voltmx-foundry-identity
+                topologyKey: "kubernetes.io/hostname"
+  apiPortal:
+    podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - voltmx-foundry-apiportal
+                topologyKey: "kubernetes.io/hostname"
+  integration:
+    podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - voltmx-foundry-integration
+                topologyKey: "kubernetes.io/hostname"
+  engagement:
+    podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - voltmx-foundry-engagement
+                topologyKey: "kubernetes.io/hostname"

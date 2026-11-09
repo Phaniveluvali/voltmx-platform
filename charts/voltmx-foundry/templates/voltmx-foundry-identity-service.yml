@@ -1,0 +1,30 @@
+{{ if .Values.identityEnabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: voltmx-foundry-identity
+  annotations:
+  {{- if (.Values.annotations.services.identity) }}
+  {{- range $customLabelValue := .Values.annotations.services.identity }}
+    {{ $customLabelValue.key }} : {{ $customLabelValue.value | quote }}
+  {{- end }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: identity
+    alias: identity
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  {{- if (.Values.labels.services.identity) }}
+  {{- range $customLabelValue := .Values.labels.services.identity }}
+    {{ $customLabelValue.key }} : {{ $customLabelValue.value | quote }}
+  {{- end }}
+  {{- end }}
+spec:
+  ports:
+    - name: tomcat
+      port: 8080
+  selector:
+    app: voltmx-foundry-identity
+  type: ClusterIP
+{{ end }}

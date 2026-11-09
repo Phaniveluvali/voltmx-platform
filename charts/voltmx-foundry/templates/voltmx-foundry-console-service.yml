@@ -1,0 +1,30 @@
+{{ if .Values.consoleEnabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: voltmx-foundry-console
+  annotations:
+  {{- if (.Values.annotations.services.console) }}
+  {{- range $customLabelValue := .Values.annotations.services.console }}
+    {{ $customLabelValue.key }} : {{ $customLabelValue.value | quote }}
+  {{- end }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: console
+    alias: console
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  {{- if (.Values.labels.services.console) }}
+  {{- range $customLabelValue := .Values.labels.services.console }}
+    {{ $customLabelValue.key }} : {{ $customLabelValue.value | quote }}
+  {{- end }}
+  {{- end }}
+spec:
+  ports:
+    - name: tomcat
+      port: 8080
+  selector:
+    app: voltmx-foundry-console
+  type: ClusterIP
+{{ end }}

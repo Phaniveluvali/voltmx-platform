@@ -1,0 +1,56 @@
+Application has been deployed successfully.
+_______________________________________________
+
+            Release Information
+_______________________________________________
+
+RELEASE TYPE: {{ .Values.foundryInstallType }}
+NAMESPACE: {{ .Release.Namespace }}
+RELEASE NAME: {{ .Release.Name }}
+CHART VERSION: {{ .Chart.Version }}
+
+_______________________________________________
+
+            Build Information
+_______________________________________________
+
+IMAGE REGISTRY: {{ .Values.imageRegistry }}
+BUILD VERSION: {{ .Values.foundryBuildVer }}
+{{- nindent 1 "" }}
+{{- if .Values.apiportal.imageTagOverride -}}
+{{- nindent 0 "APIPORTAL IMAGE TAG OVERRIDE VERSION:" }} {{ .Values.apiportal.imageTagOverride }}
+{{- end -}}
+{{- if .Values.console.imageTagOverride -}}
+{{- nindent 0 "CONSOLE IMAGE TAG OVERRIDE VERSION:" }} {{ .Values.console.imageTagOverride }}
+{{- end -}}
+{{- if .Values.engagement.imageTagOverride -}}
+{{- nindent 0 "ENGAGEMENT IMAGE TAG OVERRIDE VERSION:" }} {{ .Values.engagement.imageTagOverride }}
+{{- end -}}
+{{- if .Values.identity.imageTagOverride -}}
+{{- nindent 0 "IDENTITY IMAGE TAG OVERRIDE VERSION:" }} {{ .Values.identity.imageTagOverride }}
+{{- end -}}
+{{- if .Values.integration.imageTagOverride -}}
+{{- nindent 0 "INTEGRATION TAG IMAGE OVERRIDE VERSION:" }} {{ .Values.integration.imageTagOverride }}
+{{- end -}}
+{{- nindent 1 "" }}
+_______________________________________________
+
+            Database Information
+_______________________________________________
+
+DB TYPE: {{ .Values.dbType }}
+DB HOST: {{ .Values.dbHost }}
+DP PORT: {{ .Values.dbPort }}
+DB SERVICE: {{ .Values.dbService }}
+
+_______________________________________________
+
+            Application Information
+_______________________________________________
+
+TIMEZONE: {{ .Values.timeZone }}
+INGRESS ENABLED: {{ .Values.ingress.enabled }}
+PROTOCOL: {{if .Values.ingress.enabled }} {{ .Values.ingress.protocol }} {{ else }} http {{ end }}
+
+To verify application is running visit the url below;
+{{ template "foundryConsoleUrl" . }}

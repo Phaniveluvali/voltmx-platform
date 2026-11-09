@@ -1,0 +1,17 @@
+{{ if .Values.integration.podDisruptionBudgetSpec }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: voltmx-foundry-integration-pdb
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: integration
+    alias: integration
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  {{- toYaml .Values.integration.podDisruptionBudgetSpec | nindent 2}}
+  selector:
+    matchLabels:
+      app: voltmx-foundry-integration
+{{ end }}

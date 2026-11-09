@@ -1,0 +1,47 @@
+{{ if .Values.engagementEnabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: voltmx-foundry-engagement-conf
+  labels:
+    app.kubernetes.io/part-of: voltmx
+    app.kubernetes.io/component: engagement
+    alias: engagement
+    app.kubernetes.io/name: {{ include "voltmx.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+data:
+  DOCKER_PORT: "8080"
+  DOCKER_HOST: {{ template "foundryBaseUrl" . }}
+  FABRIC_PORT: "{{ .Values.ingress.port }}"
+  HTTP_PROTOCOL: "{{ .Values.ingress.protocol }}"
+  TOMCAT_SSL_ENABLED: "{{ .Values.configureTomcatWithTls }}"
+  TOMACT_KEYSTORE_PATH: "/mnt/foundry-common-secrets/keystore.jks"
+  TOMCAT_TLS_PROTOCOL_VERSION: "TLSv1.2"
+  TOMCAT_SSL_PROTOCOL: "TLS"
+  TOMCAT_KEYSTORE_TYPE: "JKS"
+  TOMCAT_CONNECTOR_PROTOCOL: "HTTP/1.1"
+  TOMCAT_MAX_THREADS: "200"
+  TOMCAT_CONNECTION_TIMEOUT: "60000"
+  KPNS_DB_USER: {{ template "kpnsdb_user_name" . }}
+  KPNS_DB_NAME: {{ template "kpnsdbname" . }}
+  DB_HOST: {{ template "resolveDbHostName" . }}
+  DB_PORT: "{{ .Values.dbPort }}"
+  KPNSDB_URL: {{ template "kpnsDbUrl" . }}
+  KPNS_DB_TYPE: "{{ template "db_choice" . }}"
+  DB_DRIVER: {{ template "dbDriver" . }}
+  VALIDATION_QUERY: {{ template "dbValidationQuery" . }}
+  KPNS_DB_MAX_ACTIVE_DBC: "50"
+  KPNS_DB_MAX_WAIT: "10000"
+  KPNS_DB_MAX_IDLE: "5"
+  KPNS_DB_MIN_IDLE: "2"
+  KPNSDB_DIALECT: {{ template "kpnsDbDialect" . }}
+  KPNSDB_DEFAULTCATALOG: {{ template "kpnsdb_defaultcatalog" . }}
+  KPNSDB_DELEGATE: {{ template "kpnsDbDelegateClass" . }}
+  ENGAGEMENT_MIN_RAM_PERCENTAGE: "{{ .Values.engagement.minRamPercentage }}"
+  ENGAGEMENT_MAX_RAM_PERCENTAGE: "{{ .Values.engagement.maxRamPercentage }}"
+  ENGAGEMENT_GARBAGE_COLLECTOR_TYPE: "+UseG1GC"
+  ENGAGEMENT_CUSTOM_JAVA_OPTS: "{{ .Values.engagement.customJavaOpts }} {{ if .Values.enableCaCertsOverride }}-Djavax.net.ssl.trustStore=/mnt/foundry-common-secrets/cacerts -Djavax.net.ssl.trustStorePassword={{ .Values.serverTrustStorePass }}{{ end }}"
+  TZ: "{{ .Values.timeZone }}"
+  KMS_VERTX_CACHE: '/usr/local/kms_vertx_cache'
+  KMS_CORE_VERSION: "2"
+{{ end }}
