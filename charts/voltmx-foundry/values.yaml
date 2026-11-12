@@ -250,7 +250,7 @@ apiportal:
   maxRamPercentage: "80"
 
   customJavaOpts: "-Xms1000m -Xmx1200m -XX:NewSize=256m -XX:MaxNewSize=256m -Dlog4j2.enableJndiJdbc=true "
-  replicas: 0
+  replicas: 1
   resourceRequestsCpu: "200m"
   resourceRequestsMemory: "1G"
   resourceMemoryLimit: "1.2G"
@@ -295,7 +295,7 @@ console:
   maxRamPercentage: "80"
 
   customJavaOpts: "-Xms2000m -Xmx2100m -XX:NewSize=256m -XX:MaxNewSize=512m -Dlog4j2.enableJndiJdbc=true "
-  replicas: 0
+  replicas: 1
   resourceRequestsCpu: "300m"
   resourceRequestsMemory: "2G"
   resourceMemoryLimit: "2.7G"
@@ -340,7 +340,7 @@ engagement:
   maxRamPercentage: "80"
 
   customJavaOpts: "-Xms2500m -Xmx3000m -XX:NewSize=256m -XX:MaxNewSize=512m -Dlog4j2.enableJndiJdbc=true "
-  replicas: 0
+  replicas: 1
   resourceRequestsCpu: "200m"
   resourceRequestsMemory: "1G"
   resourceMemoryLimit: "1.5G"
@@ -385,7 +385,7 @@ identity:
   maxRamPercentage: "80"
 
   customJavaOpts: "-Xms1000m -Xmx2300m -XX:NewSize=256m -XX:MaxNewSize=256m -Dlog4j2.enableJndiJdbc=true "
-  replicas: 0
+  replicas: 1
   resourceRequestsCpu: "400m"
   resourceRequestsMemory: "1G"
   resourceMemoryLimit: "1.5G"
@@ -430,7 +430,7 @@ integration:
   maxRamPercentage: "80"
 
   customJavaOpts: "-Xms2000m -Xmx3000m -XX:NewSize=256m -XX:MaxNewSize=512m -Dlog4j2.enableJndiJdbc=true "
-  replicas: 0
+  replicas: 1
   resourceRequestsCpu: "300m"
   resourceRequestsMemory: "1G"
   resourceMemoryLimit: "2G"
